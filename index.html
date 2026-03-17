@@ -87,10 +87,16 @@
 
         <!-- Preview Section -->
         <div>
-            <h2 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                プレビュー (撮影日時順)
-                <span id="previewBadge" class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full hidden">0 枚</span>
-            </h2>
+            <div class="flex justify-between items-end mb-3">
+                <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                    プレビュー
+                    <span id="previewBadge" class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full hidden">0 枚</span>
+                </h2>
+                <select id="sortOrder" class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700 font-medium cursor-pointer">
+                    <option value="asc">撮影日時 (古い順)</option>
+                    <option value="desc">撮影日時 (新しい順)</option>
+                </select>
+            </div>
             <div id="previewGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 <!-- Preview items will be inserted here -->
                 <div class="col-span-full text-center py-10 text-gray-400 bg-white rounded-xl border border-dashed" id="emptyPreview">
@@ -124,6 +130,7 @@
         const loadingOverlay = document.getElementById('loadingOverlay');
         const loadingText = document.getElementById('loadingText');
         const dropZone = document.getElementById('dropZone');
+        const sortOrder = document.getElementById('sortOrder');
 
         // Event Listeners
         fileInput.addEventListener('change', handleFileSelect);
@@ -131,6 +138,12 @@
         roomNumInput.addEventListener('input', updateNamesAndPreview);
         downloadBtn.addEventListener('click', generateZip);
         clearBtn.addEventListener('click', clearAll);
+        sortOrder.addEventListener('change', () => {
+            if (photos.length > 0) {
+                sortPhotos();
+                updateNamesAndPreview();
+            }
+        });
 
         // Drag and Drop Effects
         dropZone.addEventListener('dragover', (e) => {
@@ -179,6 +192,16 @@
             loadingOverlay.classList.remove('flex');
         }
 
+        // ソート処理
+        function sortPhotos() {
+            const order = sortOrder.value;
+            if (order === 'asc') {
+                photos.sort((a, b) => a.date.getTime() - b.date.getTime()); // 古い順
+            } else {
+                photos.sort((a, b) => b.date.getTime() - a.date.getTime()); // 新しい順
+            }
+        }
+
         // Main logic to handle selected files
         async function handleFileSelect(event) {
             const files = event.target.files;
@@ -217,8 +240,8 @@
                 });
             }
 
-            // Sort by date (oldest first)
-            photos.sort((a, b) => a.date.getTime() - b.date.getTime());
+            // 選択された並び順でソート
+            sortPhotos();
 
             updateNamesAndPreview();
             
